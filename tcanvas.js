@@ -1,32 +1,41 @@
 console.log("tcanvas.js");
 
-function TCanvas(canvas_id)
+function TCanvas()
 {
-  this.canvas = document.getElementById(canvas_id);
-  this.ctx =
+  this.canvas = 0;
+  this.ctx = 0;
+
+  this.bind = function(id)
+  {
+    this.canvas = document.getElementById("myCanvas");
+    this.ctx = this.canvas.getContext("2d");
+  }
 
 }
+
 
 function draw()
 {
   console.log("drawCanvas()");
 
   var D = new Deck();
-  D.make();
+  D.make(Card);
   D.log();
 
   console.log("done");
 
-//  var canvas = document.getElementById("myCanvas");
-//  var ctx = canvas.getContext("2d");
+  var TCV = new TCanvas();
+  TCV.bind("myCanvas");
 
+  var rows = D.seedsCount();
+  var cols = D.cardsPerSeed();
 
+  TCV.ctx.fillStyle = "#076324";
+  TCV.ctx.fillRect(0,0,TCV.canvas.width,TCV.canvas.height);
 
+  D.draw(TCV, 10, 10, rows, cols, 60, 100, 5, 5);
 
-/*    ctx.fillStyle = "#0b6000";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-
+/*
   hexstring = "\u2660 \u2661 \u2662 \u2663 \u2664 \u2665 \u2666 \u2667 \u2668 \u2669";
 
   ctx.fillStyle = "#000000"
