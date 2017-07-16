@@ -20,6 +20,7 @@ function draw()
 
   var D = new Deck();
   D.make(Card);
+  D.shuffle();
   D.log();
 
   console.log("done");
