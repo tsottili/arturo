@@ -34,7 +34,6 @@ function Item()
 
 }
 
-
 function Scene()
 {
   this.canvas = 0;
@@ -44,6 +43,17 @@ function Scene()
   {
     this.canvas = document.getElementById(id);
     this.ctx = this.canvas.getContext("2d");
+    this.width = this.canvas.width;
+  }
+
+  this.width = function()
+  {
+    return this.canvas.width;
+  }
+
+  this.height = function()
+  {
+    return this.canvas.height;
   }
 
 /*  this.addEventListener("onmousedown", function() {});
