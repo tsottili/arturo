@@ -1,7 +1,37 @@
 function Item()
 {
+  this.x = 0;
+  this.y = 0;
+  this.w = 0;
+  this.h = 0;
 
-  
+  this.setPos = function(x,y)
+  {
+    this.x = x;
+    this.y = y;
+  }
+
+  this.setWidth = function(w)
+  {
+    this.w = w;
+  }
+
+  this.setHeight = function(h)
+  {
+    this.h = h;
+  }
+
+  this.width = function()
+  {
+    return this.w;
+  }
+
+  this.height = function()
+  {
+    return this.h;
+  }
+
+
 }
 
 

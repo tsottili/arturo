@@ -15,10 +15,38 @@ var card_spots = [ [0.5, 0.5], // central spot
                    [0.9, 0.5], // middle-bottom right
                  ];
 
-function Card(v,s) {
+// v = valore della carta
+// s = seme della carta
+// w = larghezza della carta
+// h = altezza della carta
+function Card(v,s,w,h) {
+
+  Item.call(this);
+
+  this.w = w;
+  this.h = h;
+
   this.value = card_values[v];
   this.seed = card_seeds[s];
   this.color = card_color[s];
+
+  console.log("make " + v + "," + s + "," +w+","+h);
+
+  // scambia la carta con quella passata per parametro.
+  // (le istanze di oggetto si scambiano il valore della carta che rappresentano)
+  this.swap = function(c)
+  {
+    var tmp1 = this.value;
+    this.value = c.value;
+    c.value = tmp1;
+    var tmp2 = this.seed;
+    this.seed = c.seed;
+    c.seed = tmp2;
+    var tmp3 = this.color;
+    this.color = c.color;
+    c.color = tmp3;
+  }
+
 
   this.sameValue = function(c)
   {
@@ -30,37 +58,51 @@ function Card(v,s) {
     return this.seed == c.seed;
   }
 
-  this.draw = function(TCV, x, y, w, h)
+  this.str = function()
   {
-    console.log("Draw "+  this.value + this.seed  +" card.");
-    TCV.ctx.fillStyle = this.color;
-    TCV.ctx.font = "30px Arial";
-    TCV.ctx.textAlign="center";
-    TCV.ctx.textBaseline="middle";
-    TCV.ctx.fillText(""+this.value+this.seed, x+0.5*w, y+0.5*h);
+    return "" + this.value + this.seed;
+  }
 
-    TCV.ctx.font = "10px Arial";
-    TCV.ctx.textAlign="center";
-    TCV.ctx.textBaseline="middle";
-    TCV.ctx.fillText(""+this.value+this.seed, x+w*0.15, y+h*0.1);
-    TCV.ctx.fillText(""+this.value+this.seed, x+w*0.15, y+h*0.9);
-    TCV.ctx.fillText(""+this.value+this.seed, x+w*0.85, y+h*0.1);
-    TCV.ctx.fillText(""+this.value+this.seed, x+w*0.85, y+h*0.9);
+  this.draw = function(ctx)
+  {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(this.x, this.y, this.w, this.h);
+
+    console.log("Draw "+  this.value + this.seed  +" card.");
+    ctx.fillStyle = this.color;
+    ctx.font = "30px Arial";
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.fillText(""+this.value+this.seed, this.x+0.5*this.w, this.y+0.5*this.h);
+
+    ctx.font = "10px Arial";
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.fillText(""+this.value+this.seed, this.x+this.w*0.15, this.y+this.h*0.1);
+    ctx.fillText(""+this.value+this.seed, this.x+this.w*0.15, this.y+this.h*0.9);
+    ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.1);
+    ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.9);
   }
 }
 
 
 function Deck() {
 
+  Item.call(this);
+
   this.cards = [];
 
-  this.make = function(c)
+  // c = card class
+  // w = card width (px)
+  // h = card height (px)
+  this.make = function(c, w, h)
   {
     for (i = 0; i < card_values.length; i++)
     {
       for (j = 0; j < card_seeds.length; j++)
       {
-        var card = new c(i,j);
+        var card = new c(i,j,w,h);
+        console.log(card.str());
         this.cards.push(card);
       }
     }
@@ -87,9 +129,7 @@ function Deck() {
     for (i=card_values.length*card_seeds.length-1; i > 1; i--)
     {
       var picked = Math.round(Math.random() * i);
-      var tmp = this.cards[i];
-      this.cards[i] = this.cards[picked];
-      this.cards[picked] = tmp;
+      this.cards[i].swap(this.cards[picked]);
     }
   }
 
@@ -98,7 +138,7 @@ function Deck() {
     var deck_string = "";
     for (i = 0; i < this.cards.length; i++)
     {
-      deck_string = deck_string + this.cards[i].value + this.cards[i].seed +" ";
+      deck_string = deck_string + this.cards[i].str() +" ";
     }
     return deck_string;
   }
@@ -113,20 +153,23 @@ function Deck() {
     return card_seeds.length;
   }
 
-  this.draw = function(TCV, x0, y0, rows, cols, w, h, dx, dy)
+  this.calculateCardsPosition = function(rows, cols, dx, dy)
   {
     for (i = 0; i < cols; i++)
     {
       for (j = 0; j < rows; j++)
       {
-          TCV.ctx.fillStyle = "#FFFFFF";
-          var xpos = x0 + (w+dx)*i;
-          var ypos = y0+(h+dy)*j;
-          TCV.ctx.fillRect(xpos,ypos,w,h);
-          console.log("select card ", i*rows + j)
-          this.card(i*rows+j).draw(TCV, xpos, ypos, w, h);
+        var index = i*rows+j;
+        var xpos = this.x + (this.cards[index].width() + dx)*i;
+        var ypos = this.y + (this.cards[index].height() + dy)*j;
+        this.cards[index].setPos(xpos, ypos);
       }
     }
   }
 
+  this.draw = function(ctx)
+  {
+    for (i = 0; i < this.cards.length; i++)
+        this.cards[i].draw(ctx);
+  }
 }
