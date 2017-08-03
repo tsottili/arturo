@@ -1,31 +1,37 @@
-
-
+// Represent the gaming table, where cards are played
 function Table()
 {
+  // The Table is a Scene
   Scene.call(this);
 
-  this.D = new Deck();
+  // create the deck for the table
+  //this.D = new Deck();
 
+  // build current scene
   this.build = function()
   {
-    this.D.setPos(10,10);
-    this.D.setWidth(this.width-10*2);
-    this.D.setHeight(this.height-10*2);
-    this.D.make(Card,60,100);
-    this.D.shuffle();
-    this.D.log();
-    this.D.calculateCardsPosition(4,10,5,5);
+    // the deck itself is an item (represent all the cards that are in play)
+    // so it has position, width and height (play area)
+    var D = new Deck();
+    D.setPos(10,10);
+    D.setWidth(this.width()-10*2);
+    D.setHeight(this.height()-10*2);
+
+    // construct the cards (values, seeds, width and height)
+    D.make(Card,60,100);
+
+    // shuffle the deck
+    D.shuffle();
+
+    // just a console print of the shuffled deck
+    D.log();
+
+    // calculate card position assuming a rows X columns setup
+    D.calculateCardsPosition(4,10,5,5);
+
+    this.add(D);
   }
 
-  this.draw = function()
-  {
-      // disegna il tavolo
-      this.ctx.fillStyle = "#076324";
-      this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
-
-      this.D.draw(this.ctx);
-
-  }
 }
 
 

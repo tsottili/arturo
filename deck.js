@@ -2,38 +2,26 @@ var card_values = ["A","2","3","4","5","6","7","J","Q","K"];
 var card_seeds =  ["\u2660","\u2663","\u2665","\u2666"];
 var card_color =  ["#000000","#000000","#ff0000", "#ff0000"];
 
-var card_spots = [ [0.5, 0.5], // central spot
-                   [0.1, 0.1], // top left
-                   [0.9, 0.1], // top right
-                   [0.1, 0.9], // bottom left
-                   [0.9, 0.9], // bottom right
-                   [0.1, 0,5], // middle left
-                   [0.9, 0.5], // middle right
-                   [0.1, 0.3], // middle-top left
-                   [0.9, 0.3], // middle-top right
-                   [0.1, 0.5], // middle-bottom left
-                   [0.9, 0.5], // middle-bottom right
-                 ];
-
-// v = valore della carta
-// s = seme della carta
-// w = larghezza della carta
-// h = altezza della carta
+// v = card value
+// s = card seed
+// w = width
+// h = height
 function Card(v,s,w,h) {
 
+  // Each card is an item
   Item.call(this);
 
+  // save width and height
   this.w = w;
   this.h = h;
 
+  // save card values
   this.value = card_values[v];
   this.seed = card_seeds[s];
   this.color = card_color[s];
 
-  console.log("make " + v + "," + s + "," +w+","+h);
-
-  // scambia la carta con quella passata per parametro.
-  // (le istanze di oggetto si scambiano il valore della carta che rappresentano)
+  // swap current card values with the c parameter card values
+  // swap only seed, value and color
   this.swap = function(c)
   {
     var tmp1 = this.value;
@@ -47,22 +35,25 @@ function Card(v,s,w,h) {
     c.color = tmp3;
   }
 
-
+  // true if current card has same value of the parameter card
   this.sameValue = function(c)
   {
     return this.value == c.value;
   }
 
+  // true if current card has same seed of the parameter card
   this.sameSeed = function(c)
   {
     return this.seed == c.seed;
   }
 
+  // this card as a string
   this.str = function()
   {
     return "" + this.value + this.seed;
   }
 
+  // draw this card
   this.draw = function(ctx)
   {
     ctx.fillStyle = "#ffffff";
@@ -85,11 +76,13 @@ function Card(v,s,w,h) {
   }
 }
 
-
+// Represent a deck of cards
 function Deck() {
 
+  // Deck is an Item
   Item.call(this);
 
+  // cards array
   this.cards = [];
 
   // c = card class
@@ -108,6 +101,7 @@ function Deck() {
     }
   }
 
+  // access to i-th card
   this.card = function(i)
   {
     if (i < card_values.length * card_seeds.length) {
@@ -119,11 +113,13 @@ function Deck() {
     }
   }
 
+  // just a console print
   this.log = function()
   {
     console.log("Current deck: " + this.str());
   }
 
+  // shuffle current deck
   this.shuffle = function()
   {
     for (i=card_values.length*card_seeds.length-1; i > 1; i--)
@@ -133,6 +129,7 @@ function Deck() {
     }
   }
 
+  // get the whole deck a string
   this.str = function()
   {
     var deck_string = "";
@@ -143,16 +140,19 @@ function Deck() {
     return deck_string;
   }
 
+  // how many cards per seed
   this.cardsPerSeed = function()
   {
     return card_values.length;
   }
 
+  // how many seeds
   this.seedsCount = function()
   {
     return card_seeds.length;
   }
 
+  // calculate cards position assuming a rowsXcols setup, leaving dx and dy space between cards
   this.calculateCardsPosition = function(rows, cols, dx, dy)
   {
     for (i = 0; i < cols; i++)
@@ -167,8 +167,13 @@ function Deck() {
     }
   }
 
+  // draw the deck (call draw on each card)
   this.draw = function(ctx)
   {
+    // draw table background (green)
+    ctx.fillStyle = "#076324";
+    ctx.fillRect(0,0,this.width(),this.height());
+
     for (i = 0; i < this.cards.length; i++)
         this.cards[i].draw(ctx);
   }
