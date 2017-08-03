@@ -74,16 +74,23 @@ function Card(v,s,w,h) {
     ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.1);
     ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.9);
   }
+
+  this.cb_mousedown = function(x,y)
+  {
+    console.log("Card "+ this.value + this.seed +" mousedown: " + x + "," + y);
+  }
+
+  this.cb_mouseup = function(x,y)
+  {
+    console.log("Card "+ this.value + this.seed +" mouseup: " + x + "," + y);
+  }
 }
 
-// Represent a deck of cards
+// Represent a deck of cards (as a collection of items)
 function Deck() {
 
   // Deck is an Item
   Item.call(this);
-
-  // cards array
-  this.cards = [];
 
   // c = card class
   // w = card width (px)
@@ -96,7 +103,7 @@ function Deck() {
       {
         var card = new c(i,j,w,h);
         console.log(card.str());
-        this.cards.push(card);
+        this.items.push(card);
       }
     }
   }
@@ -105,7 +112,7 @@ function Deck() {
   this.card = function(i)
   {
     if (i < card_values.length * card_seeds.length) {
-      return this.cards[i];
+      return this.items[i];
     }
     else {
       console.log("Search for "+i+"th card.");
@@ -125,7 +132,7 @@ function Deck() {
     for (i=card_values.length*card_seeds.length-1; i > 1; i--)
     {
       var picked = Math.round(Math.random() * i);
-      this.cards[i].swap(this.cards[picked]);
+      this.items[i].swap(this.items[picked]);
     }
   }
 
@@ -133,9 +140,9 @@ function Deck() {
   this.str = function()
   {
     var deck_string = "";
-    for (i = 0; i < this.cards.length; i++)
+    for (i = 0; i < this.items.length; i++)
     {
-      deck_string = deck_string + this.cards[i].str() +" ";
+      deck_string = deck_string + this.items[i].str() +" ";
     }
     return deck_string;
   }
@@ -160,9 +167,9 @@ function Deck() {
       for (j = 0; j < rows; j++)
       {
         var index = i*rows+j;
-        var xpos = this.x + (this.cards[index].width() + dx)*i;
-        var ypos = this.y + (this.cards[index].height() + dy)*j;
-        this.cards[index].setPos(xpos, ypos);
+        var xpos = this.x + (this.items[index].width() + dx)*i;
+        var ypos = this.y + (this.items[index].height() + dy)*j;
+        this.items[index].setPos(xpos, ypos);
       }
     }
   }
@@ -174,7 +181,19 @@ function Deck() {
     ctx.fillStyle = "#076324";
     ctx.fillRect(0,0,this.width(),this.height());
 
-    for (i = 0; i < this.cards.length; i++)
-        this.cards[i].draw(ctx);
+    for (i = 0; i < this.items.length; i++)
+        this.items[i].draw(ctx);
+  }
+
+  // just a sample
+  this.cb_mousedown = function(x,y)
+  {
+    console.log("Deck mousedown: " + x + "," + y);
+  }
+
+  // just a sample
+  this.cb_mouseup = function(x,y)
+  {
+    console.log("Deck mouseup: " + x + "," + y);
   }
 }
