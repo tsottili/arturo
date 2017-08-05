@@ -6,9 +6,18 @@ function Item()
   this.w = 0;
   this.h = 0;
 
+  // flag need redraw: first time always need redraw
+  this.dirty = true;
+  // at least one sub-item is dirty
+  this.dirtyChild = false;
+
   // each item can have sub-items
   this.items = [];
 
+  // parent item
+  this.parent = null;
+
+  this.cb_draw = null;
   this.cb_mousedown = null;
   this.cb_mouseup = null;
 
@@ -49,9 +58,62 @@ function Item()
            (y >= this.y ) && (y < this.y+this.h);
   }
 
+  // add a sub-item to this item
   this.add = function(item)
   {
     this.items.push(item);
+
+    // I am your father.
+    item.parent = this;
+
+    // after add operation a redraw is nice
+    item.setDirty();
+  }
+
+  // ser dirty flag on item and on ancestor
+  this.setDirty = function()
+  {
+    this.dirty = true;
+    if (this.parent != null)
+    {
+      this.parent.notifyDirtyChild();
+    }
+  }
+
+  this.notifyDirtyChild = function()
+  {
+    this.dirtyChild = true;
+    if (this.parent != null)
+    {
+      this.parent.notifyDirtyChild();
+    }
+  }
+
+  this.needRedraw = function()
+  {
+    return this.dirty || this.dirtyChild;
+  }
+
+  // generic item draw function
+  this.draw = function(ctx)
+  {
+    if ( (this.cb_draw != null) && (this.dirty) )
+    {
+      if (this.cb_draw(ctx))
+      {
+          this.dirty = false;
+      }
+    }
+
+    // call this function on sub items
+    if (this.dirtyChild)
+    {
+      for (var i = 0; i < this.items.length; i++)
+          this.items[i].draw(ctx);
+    }
+
+    this.dirtyChild = false;
+    this.dirty = false;
   }
 
   this.mousedown = function(x,y)
@@ -139,10 +201,19 @@ function Scene()
 
   this.draw = function()
   {
-    for (i=0; i < this.items.length; i++)
+    console.log("tscene::draw\n");
+    for (var i=0; i < this.items.length; i++)
     {
-      this.items[i].draw(this.ctx);
+      if (this.items[i].needRedraw())
+      {
+        this.items[i].draw(this.ctx);
+      }
     }
+  }.bind(this);
+
+  this.run = function(millisecs)
+  {
+    setInterval(this.draw,millisecs);
   }
 
   // translate coordinate in canvas units.

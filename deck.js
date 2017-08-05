@@ -20,6 +20,8 @@ function Card(v,s,w,h) {
   this.seed = card_seeds[s];
   this.color = card_color[s];
 
+  this.selected = false;
+
   // swap current card values with the c parameter card values
   // swap only seed, value and color
   this.swap = function(c)
@@ -54,12 +56,13 @@ function Card(v,s,w,h) {
   }
 
   // draw this card
-  this.draw = function(ctx)
+  this.cb_draw = function(ctx)
   {
+    console.log("Draw "+  this.value + this.seed  +" card.");
+
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(this.x, this.y, this.w, this.h);
 
-    console.log("Draw "+  this.value + this.seed  +" card.");
     ctx.fillStyle = this.color;
     ctx.font = "30px Arial";
     ctx.textAlign="center";
@@ -73,16 +76,24 @@ function Card(v,s,w,h) {
     ctx.fillText(""+this.value+this.seed, this.x+this.w*0.15, this.y+this.h*0.9);
     ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.1);
     ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.9);
+
+    return true;
   }
 
   this.cb_mousedown = function(x,y)
   {
+    this.selected = true;
     console.log("Card "+ this.value + this.seed +" mousedown: " + x + "," + y);
+
+    return true;
   }
 
   this.cb_mouseup = function(x,y)
   {
+    this.selected = false;
     console.log("Card "+ this.value + this.seed +" mouseup: " + x + "," + y);
+    this.setDirty();
+    return true;
   }
 }
 
@@ -97,13 +108,13 @@ function Deck() {
   // h = card height (px)
   this.make = function(c, w, h)
   {
-    for (i = 0; i < card_values.length; i++)
+    for (var i = 0; i < card_values.length; i++)
     {
-      for (j = 0; j < card_seeds.length; j++)
+      for (var j = 0; j < card_seeds.length; j++)
       {
         var card = new c(i,j,w,h);
         console.log(card.str());
-        this.items.push(card);
+        this.add(card);
       }
     }
   }
@@ -129,7 +140,7 @@ function Deck() {
   // shuffle current deck
   this.shuffle = function()
   {
-    for (i=card_values.length*card_seeds.length-1; i > 1; i--)
+    for (var i=card_values.length*card_seeds.length-1; i > 1; i--)
     {
       var picked = Math.round(Math.random() * i);
       this.items[i].swap(this.items[picked]);
@@ -140,7 +151,7 @@ function Deck() {
   this.str = function()
   {
     var deck_string = "";
-    for (i = 0; i < this.items.length; i++)
+    for (var i = 0; i < this.items.length; i++)
     {
       deck_string = deck_string + this.items[i].str() +" ";
     }
@@ -162,9 +173,9 @@ function Deck() {
   // calculate cards position assuming a rowsXcols setup, leaving dx and dy space between cards
   this.calculateCardsPosition = function(rows, cols, dx, dy)
   {
-    for (i = 0; i < cols; i++)
+    for (var i = 0; i < cols; i++)
     {
-      for (j = 0; j < rows; j++)
+      for (var j = 0; j < rows; j++)
       {
         var index = i*rows+j;
         var xpos = this.x + (this.items[index].width() + dx)*i;
@@ -175,14 +186,14 @@ function Deck() {
   }
 
   // draw the deck (call draw on each card)
-  this.draw = function(ctx)
+  this.cb_draw = function(ctx)
   {
+    console.log("deck::draw");
     // draw table background (green)
     ctx.fillStyle = "#076324";
     ctx.fillRect(0,0,this.width(),this.height());
 
-    for (i = 0; i < this.items.length; i++)
-        this.items[i].draw(ctx);
+    return true;
   }
 
   // just a sample

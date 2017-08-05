@@ -4,9 +4,6 @@ function Table()
   // The Table is a Scene
   Scene.call(this);
 
-  // create the deck for the table
-  //this.D = new Deck();
-
   // build current scene
   this.build = function()
   {
@@ -29,6 +26,7 @@ function Table()
     // calculate card position assuming a rows X columns setup
     D.calculateCardsPosition(4,10,5,5);
 
+    // add item to the scene
     this.add(D);
   }
 
@@ -41,5 +39,7 @@ function myApp()
   TCV.bind("myCanvas");
   TCV.build();
 
-  TCV.draw();
+  TCV.run(500);
+
+
 }
