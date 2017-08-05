@@ -39,7 +39,7 @@ function myApp()
   TCV.bind("myCanvas");
   TCV.build();
 
-  TCV.run(500);
+  TCV.run(100);
 
 
 }

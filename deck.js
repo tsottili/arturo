@@ -77,22 +77,35 @@ function Card(v,s,w,h) {
     ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.1);
     ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.9);
 
+    if (this.selected)
+    {
+      console.log("selected\n");
+      ctx.strokeStyle = 'yellow';
+      ctx.lineWidth=2;
+      ctx.strokeRect(this.x+1, this.y+1, this.w-2, this.h-2);
+    }
     return true;
   }
 
   this.cb_mousedown = function(x,y)
   {
-    this.selected = true;
-    console.log("Card "+ this.value + this.seed +" mousedown: " + x + "," + y);
-
     return true;
   }
 
   this.cb_mouseup = function(x,y)
   {
-    this.selected = false;
-    console.log("Card "+ this.value + this.seed +" mouseup: " + x + "," + y);
+    this.selected = true;
+
+    if (this.parent.selected_card)
+    {
+      this.parent.selected_card.selected = false;
+      this.parent.selected_card.setDirty();
+    }
+    this.parent.selected_card = this;
+
     this.setDirty();
+
+    console.log("Card "+ this.value + this.seed +" mouseup: " + x + "," + y);
     return true;
   }
 }
@@ -102,6 +115,9 @@ function Deck() {
 
   // Deck is an Item
   Item.call(this);
+
+  // the current selected card
+  this.selected = null;
 
   // c = card class
   // w = card width (px)
@@ -188,6 +204,8 @@ function Deck() {
   // draw the deck (call draw on each card)
   this.cb_draw = function(ctx)
   {
+
+
     console.log("deck::draw");
     // draw table background (green)
     ctx.fillStyle = "#076324";
