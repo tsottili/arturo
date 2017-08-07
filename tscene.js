@@ -201,7 +201,6 @@ function Scene()
 
   this.draw = function()
   {
-    console.log("tscene::draw\n");
     for (var i=0; i < this.items.length; i++)
     {
       if (this.items[i].needRedraw())
@@ -244,6 +243,9 @@ function Scene()
     var run = true;
     var x = event.clientX - this.rect.left
     var y = event.clientY - this.rect.top;
+
+    this.ctx.arc(x,y,5,0*Math.PI,2*Math.PI);
+
 
     for (var i = 0; i < this.items.length; i++)
     {

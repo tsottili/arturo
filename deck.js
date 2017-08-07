@@ -58,32 +58,47 @@ function Card(v,s,w,h) {
   // draw this card
   this.cb_draw = function(ctx)
   {
-    console.log("Draw "+  this.value + this.seed  +" card.");
+    console.log("Draw "+  this.value + this.seed  +" card, selected = " + this.selected);
+    console.log("Rect is "+ this.x + "," + this.y + "," + this.w + "," + this.h);
 
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(this.x, this.y, this.w, this.h);
+    if (this.selected == true)
+    {
+      console.log("Draw " + this.value + this.seed  + " front");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(this.x, this.y, this.w, this.h);
 
-    ctx.fillStyle = this.color;
-    ctx.font = "30px Arial";
-    ctx.textAlign="center";
-    ctx.textBaseline="middle";
-    ctx.fillText(""+this.value+this.seed, this.x+0.5*this.w, this.y+0.5*this.h);
+      ctx.fillStyle = this.color;
+      ctx.font = "30px Arial";
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      ctx.fillText(""+this.value+this.seed, this.x+0.5*this.w, this.y+0.5*this.h);
 
-    ctx.font = "10px Arial";
-    ctx.textAlign="center";
-    ctx.textBaseline="middle";
-    ctx.fillText(""+this.value+this.seed, this.x+this.w*0.15, this.y+this.h*0.1);
-    ctx.fillText(""+this.value+this.seed, this.x+this.w*0.15, this.y+this.h*0.9);
-    ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.1);
-    ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.9);
+      ctx.font = "10px Arial";
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      ctx.fillText(""+this.value+this.seed, this.x+this.w*0.15, this.y+this.h*0.1);
+      ctx.fillText(""+this.value+this.seed, this.x+this.w*0.15, this.y+this.h*0.9);
+      ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.1);
+      ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.9);
+    }
+    else
+    {
+      console.log("Draw " + this.value + this.seed  + " back");
+      var img=document.getElementById("back");
+      var pat=ctx.createPattern(img,"repeat");
+      ctx.fillStyle=pat;
+      ctx.fillRect(this.x, this.y, this.w, this.h);
+    }
 
     if (this.selected)
     {
-      console.log("selected\n");
+      console.log("Draw yellow"+ this.x + "," + this.y + "," + this.w + "," + this.h);
+      //console.log("selected\n");
       ctx.strokeStyle = 'yellow';
       ctx.lineWidth=2;
       ctx.strokeRect(this.x+1, this.y+1, this.w-2, this.h-2);
     }
+
     return true;
   }
 
@@ -94,15 +109,18 @@ function Card(v,s,w,h) {
 
   this.cb_mouseup = function(x,y)
   {
-    this.selected = true;
-
+    // deselect previous card
     if (this.parent.selected_card)
     {
       this.parent.selected_card.selected = false;
       this.parent.selected_card.setDirty();
+      console.log("Deselect "+this.parent.selected_card.str());
     }
-    this.parent.selected_card = this;
 
+    // select this one
+    this.selected = true;
+    console.log("Selected "+this.str());
+    this.parent.selected_card = this;
     this.setDirty();
 
     console.log("Card "+ this.value + this.seed +" mouseup: " + x + "," + y);
