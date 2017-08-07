@@ -170,6 +170,9 @@ function Scene()
 
   this.items = [];
   this.rect = 0;
+  this.Xratio= 0;
+  this.Yratio= 0;
+  this.interval = 0;
 
   this.bind = function(id)
   {
@@ -179,10 +182,26 @@ function Scene()
     // default events listeners
     document.addEventListener("mousedown", this.mousedown);
     document.addEventListener("mouseup", this.mouseup);
+    window.addEventListener("resize", this.resize); // temp!
+    window.addEventListener("scroll", this.resize); // temp!
 
     // get canvas rect (in client units)
     this.rect = this.canvas.getBoundingClientRect();
+    // calculate ratio for scaling unit in canvas system
+    this.Xratio = this.canvas.width / this.rect.width;
+    this.Yratio = this.canvas.height / this.rect.height;
   }
+
+  this.resize = function()
+  {
+    console.log("Resize");
+
+    // get canvas rect (in client units)
+    this.rect = this.canvas.getBoundingClientRect();
+    // calculate ratio for scaling unit in canvas system
+    this.Xratio = this.canvas.width / this.rect.width;
+    this.Yratio = this.canvas.height / this.rect.height;
+  }.bind(this);
 
   this.width = function()
   {
@@ -201,6 +220,7 @@ function Scene()
 
   this.draw = function()
   {
+    var t0 = performance.now();
     for (var i=0; i < this.items.length; i++)
     {
       if (this.items[i].needRedraw())
@@ -208,10 +228,17 @@ function Scene()
         this.items[i].draw(this.ctx);
       }
     }
+    var t1 = performance.now() - t0;
+    if (t1/this.interval >= 0.25)
+    {
+      console.log("Drawing time = " + t1 +" millisecs [interval = "+this.interval+"]");
+    }
+
   }.bind(this);
 
   this.run = function(millisecs)
   {
+    this.interval = millisecs;
     setInterval(this.draw,millisecs);
   }
 
@@ -221,9 +248,8 @@ function Scene()
   {
     console.log("mousedown:"+event.clientX+","+event.clientY);
     var run = true;
-    var x = event.clientX - this.rect.left
-    var y = event.clientY - this.rect.top;
-
+    var x = (event.clientX - this.rect.left)*this.Xratio;
+    var y = (event.clientY - this.rect.top)*this.Yratio;
     for (var i = 0; i < this.items.length; i++)
     {
       run = this.items[i].mousedown(x,y);
@@ -241,11 +267,8 @@ function Scene()
   {
     console.log("mouseup:"+event.clientX+","+event.clientY);
     var run = true;
-    var x = event.clientX - this.rect.left
-    var y = event.clientY - this.rect.top;
-
-    this.ctx.arc(x,y,5,0*Math.PI,2*Math.PI);
-
+    var x = (event.clientX - this.rect.left)*this.Xratio;
+    var y = (event.clientY - this.rect.top)*this.Yratio;
 
     for (var i = 0; i < this.items.length; i++)
     {

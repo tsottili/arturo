@@ -93,7 +93,6 @@ function Card(v,s,w,h) {
     if (this.selected)
     {
       console.log("Draw yellow"+ this.x + "," + this.y + "," + this.w + "," + this.h);
-      //console.log("selected\n");
       ctx.strokeStyle = 'yellow';
       ctx.lineWidth=2;
       ctx.strokeRect(this.x+1, this.y+1, this.w-2, this.h-2);
