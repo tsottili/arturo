@@ -9,7 +9,7 @@ var card_color =  ["#000000","#000000","#ff0000", "#ff0000"];
 function Card(v,s,w,h) {
 
   // Each card is an item
-  Item.call(this);
+  TItem.call(this);
 
   // save width and height
   this.w = w;
@@ -131,7 +131,7 @@ function Card(v,s,w,h) {
 function Deck() {
 
   // Deck is an Item
-  Item.call(this);
+  TItem.call(this);
 
   // the current selected card
   this.selected = null;
@@ -206,13 +206,18 @@ function Deck() {
   // calculate cards position assuming a rowsXcols setup, leaving dx and dy space between cards
   this.calculateCardsPosition = function(rows, cols, dx, dy)
   {
-    for (var i = 0; i < cols; i++)
+    for (var j = 0; j < rows; j++)
     {
-      for (var j = 0; j < rows; j++)
+      for (var i = 0; i < cols; i++)
       {
-        var index = i*rows+j;
-        var xpos = this.x + (this.items[index].width() + dx)*i;
-        var ypos = this.y + (this.items[index].height() + dy)*j;
+        var index = j*cols+i;
+
+        // if we reached the total number of cards, we can exit.
+        if (index >= this.items.length)
+          return;
+
+        var xpos = this.x + dx + (this.items[index].width() + dx)*i;
+        var ypos = this.y + dy + (this.items[index].height() + dy)*j;
         this.items[index].setPos(xpos, ypos);
       }
     }
@@ -226,7 +231,7 @@ function Deck() {
     console.log("deck::draw");
     // draw table background (green)
     ctx.fillStyle = "#076324";
-    ctx.fillRect(0,0,this.width(),this.height());
+    ctx.fillRect(this.x, this.y, this.width(),this.height());
 
     return true;
   }

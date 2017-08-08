@@ -2,7 +2,7 @@
 function Table()
 {
   // The Table is a Scene
-  Scene.call(this);
+  TScene.call(this);
 
   // build current scene
   this.build = function()
@@ -24,7 +24,7 @@ function Table()
     D.log();
 
     // calculate card position assuming a rows X columns setup
-    D.calculateCardsPosition(4,10,5,5);
+    D.calculateCardsPosition(10,5,5,5);
 
     // add item to the scene
     this.add(D);
