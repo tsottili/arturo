@@ -23,8 +23,9 @@ function Table()
     // just a console print of the shuffled deck
     D.log();
 
-    // calculate card position assuming a rows X columns setup
-    D.calculateCardsPosition(10,5,5,5);
+    // (temp) calculate card position assuming a rows X columns setup
+    // calculate card spots and deck spot
+    D.build(10,5,5,5);
 
     // add item to the scene
     this.add(D);

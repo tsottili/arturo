@@ -1,25 +1,10 @@
-function TItem()
+function TRect()
 {
-  // An Item has position (x,y) and dimensions (w, h)
+  // A Rect has position (x,y) and dimensions (w, h)
   this.x = 0;
   this.y = 0;
   this.w = 0;
   this.h = 0;
-
-  // flag need redraw: first time always need redraw
-  this.dirty = true;
-  // at least one sub-item is dirty
-  this.dirtyChild = false;
-
-  // each item can have sub-items
-  this.items = [];
-
-  // parent item
-  this.parent = null;
-
-  this.cb_draw = null;
-  this.cb_mousedown = null;
-  this.cb_mouseup = null;
 
   // set item position
   this.setPos = function(x,y)
@@ -57,6 +42,28 @@ function TItem()
     return (x >= this.x ) && (x < this.x+this.w) &&
            (y >= this.y ) && (y < this.y+this.h);
   }
+
+}
+
+function TItem()
+{
+  TRect.call(this);
+
+  // flag need redraw: first time always need redraw
+  this.dirty = true;
+  // at least one sub-item is dirty
+  this.dirtyChild = false;
+
+  // each item can have sub-items
+  this.items = [];
+
+  // parent item
+  this.parent = null;
+
+  this.cb_draw = null;
+  this.cb_mousedown = null;
+  this.cb_mouseup = null;
+
 
   // add a sub-item to this item
   this.add = function(item)

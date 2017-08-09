@@ -122,10 +122,13 @@ function Card(v,s,w,h) {
     this.parent.selected_card = this;
     this.setDirty();
 
+    this.setPos(this.parent.pit.x,this.parent.pit.y);
+
     console.log("Card "+ this.value + this.seed +" mouseup: " + x + "," + y);
     return true;
   }
 }
+
 
 // Represent a deck of cards (as a collection of items)
 function Deck() {
@@ -136,11 +139,29 @@ function Deck() {
   // the current selected card
   this.selected = null;
 
+  // current card size
+  this.card_width = 0;
+  this.card_height = 0;
+  this.card_dx = 0;
+  this.card_dy = 0;
+  this.card_per_rows = 0;
+  this.card_per_cols = 0;
+
+  // spots card positions
+  // tableau spots where cards are played
+  this.card_spots = [];
+  // pile from where the card are taken
+  this.pile = 0;
+  // pit where the card are discarded
+  this.pit = 0;
+
   // c = card class
   // w = card width (px)
   // h = card height (px)
   this.make = function(c, w, h)
   {
+    this.card_width = w;
+    this.card_height = h;
     for (var i = 0; i < card_values.length; i++)
     {
       for (var j = 0; j < card_seeds.length; j++)
@@ -203,24 +224,66 @@ function Deck() {
     return card_seeds.length;
   }
 
-  // calculate cards position assuming a rowsXcols setup, leaving dx and dy space between cards
-  this.calculateCardsPosition = function(rows, cols, dx, dy)
+  // deploy cards for starting set up
+  this.build = function(rows, cols, dx, dy)
   {
+    this.card_dx=dx;
+    this.card_dy=dy;
+    this.card_per_rows = rows;
+    this.card_per_cols = cols;
+
+    for (var j = 0; j < rows; j++)
+    {
+      for (var i = 0; i < cols; i++)
+      {
+        this.card_spots.push(this.calc_spot(i,j));
+      }
+    }
+
+    // special spot for cards to be played
+    this.pile = new TRect();
+    this.pile.setWidth(this.card_width+1);
+    this.pile.setHeight(this.card_height+1);
+    this.pile.setPos(this.x+this.width()-this.card_width-1-this.card_dx, this.y+this.card_dy);
+
+    // special sport for discarded cards
+    this.pit = new TRect();
+    this.pit.setWidth(this.card_width+1);
+    this.pit.setHeight(this.card_height+1);
+    this.pit.setPos(this.x+this.width()-this.card_width-1-this.card_dx, this.y+2*this.card_dy+this.card_height);
+
     for (var j = 0; j < rows; j++)
     {
       for (var i = 0; i < cols; i++)
       {
         var index = j*cols+i;
 
-        // if we reached the total number of cards, we can exit.
-        if (index >= this.items.length)
-          return;
-
-        var xpos = this.x + dx + (this.items[index].width() + dx)*i;
-        var ypos = this.y + dy + (this.items[index].height() + dy)*j;
-        this.items[index].setPos(xpos, ypos);
+        //if we reached the total number of cards, we can exit.
+        if (index < this.items.length)
+          this.items[index].setPos(this.pile.x+1, this.pile.y+1);
       }
     }
+  }
+
+  // calculate card spot (i = rows, j=cols)
+  this.calc_spot = function(i,j)
+  {
+    var xpos = this.x +this.card_dx + (this.card_width + this.card_dx)*i;
+    var ypos = this.y +this.card_dy + (this.card_height + this.card_dy)*j;
+
+    var r = new TRect();
+    r.setPos(xpos,ypos);
+    r.setWidth(this.card_width+1);
+    r.setHeight(this.card_height+1);
+    return r;
+  }
+
+  // draw a card spot
+  this.draw_spot = function(ctx,r)
+  {
+    ctx.strokeStyle = '#777777';
+    ctx.lineWidth=1;
+    ctx.strokeRect(r.x, r.y, r.w, r.h);
   }
 
   // draw the deck (call draw on each card)
@@ -232,6 +295,15 @@ function Deck() {
     // draw table background (green)
     ctx.fillStyle = "#076324";
     ctx.fillRect(this.x, this.y, this.width(),this.height());
+
+    // draw played cards spots
+    for (var k = 0; k < this.card_spots.length; k++)
+    {
+      this.draw_spot(ctx,this.card_spots[k]);
+    }
+
+    this.draw_spot(ctx, this.pile);
+    this.draw_spot(ctx, this.pit);
 
     return true;
   }
