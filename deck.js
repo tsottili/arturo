@@ -9,7 +9,7 @@ var card_color =  ["#000000","#000000","#ff0000", "#ff0000"];
 function Card(v,s,w,h) {
 
   // Each card is an item
-  TItem.call(this);
+  //TItem.call(this);
 
   // save width and height
   this.w = w;
@@ -20,7 +20,7 @@ function Card(v,s,w,h) {
   this.seed = card_seeds[s];
   this.color = card_color[s];
 
-  this.selected = false;
+  this.showfront = false;
 
   // swap current card values with the c parameter card values
   // swap only seed, value and color
@@ -55,31 +55,41 @@ function Card(v,s,w,h) {
     return "" + this.value + this.seed;
   }
 
-  // draw this card
-  this.cb_draw = function(ctx)
+  this.reveal = function()
   {
-    console.log("Draw "+  this.value + this.seed  +" card, selected = " + this.selected);
-    console.log("Rect is "+ this.x + "," + this.y + "," + this.w + "," + this.h);
+    this.showfront = true;
+  }
 
-    if (this.selected == true)
+  this.hide = function()
+  {
+    this.showfront = false;
+  }
+
+  // draw this card
+  this.draw = function(ctx,x,y)
+  {
+    console.log("Draw "+  this.value + this.seed  +" card, showfront = " + this.showfront);
+    console.log("Rect is "+ x + "," + y + "," + this.w + "," + this.h);
+
+    if (this.showfront == true)
     {
       console.log("Draw " + this.value + this.seed  + " front");
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(this.x, this.y, this.w, this.h);
+      ctx.fillRect(x, y, this.w, this.h);
 
       ctx.fillStyle = this.color;
       ctx.font = "30px Arial";
       ctx.textAlign="center";
       ctx.textBaseline="middle";
-      ctx.fillText(""+this.value+this.seed, this.x+0.5*this.w, this.y+0.5*this.h);
+      ctx.fillText(""+this.value+this.seed, x+0.5*this.w, y+0.5*this.h);
 
       ctx.font = "10px Arial";
       ctx.textAlign="center";
       ctx.textBaseline="middle";
-      ctx.fillText(""+this.value+this.seed, this.x+this.w*0.15, this.y+this.h*0.1);
-      ctx.fillText(""+this.value+this.seed, this.x+this.w*0.15, this.y+this.h*0.9);
-      ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.1);
-      ctx.fillText(""+this.value+this.seed, this.x+this.w*0.85, this.y+this.h*0.9);
+      ctx.fillText(""+this.value+this.seed, x+this.w*0.15, y+this.h*0.1);
+      ctx.fillText(""+this.value+this.seed, x+this.w*0.15, y+this.h*0.9);
+      ctx.fillText(""+this.value+this.seed, x+this.w*0.85, y+this.h*0.1);
+      ctx.fillText(""+this.value+this.seed, x+this.w*0.85, y+this.h*0.9);
     }
     else
     {
@@ -87,45 +97,87 @@ function Card(v,s,w,h) {
       var img=document.getElementById("back");
       var pat=ctx.createPattern(img,"repeat");
       ctx.fillStyle=pat;
-      ctx.fillRect(this.x, this.y, this.w, this.h);
+      ctx.fillRect(x, y, this.w, this.h);
     }
 
+    return true;
+  }
+}
+
+function Spot()
+{
+  TItem.call(this);
+
+  this.cards = [];
+
+  // max number of cards this spot can held
+  this.capacity = 0;
+
+  // selected flag (last clicked on)
+  this.selected = false;
+
+  this.setCapacity = function(i)
+  {
+    this.capacity = i;
+  }
+
+  this.add = function(c)
+  {
+    if (this.cards.length < this.capacity)
+    {
+      this.cards.push(c);
+    }
+  }
+
+  this.extract = function(c)
+  {
+    return this.cards.pop();
+  }
+
+  this.reveal = function()
+  {
+    if (this.cards.length > 0)
+    {
+      this.cards[this.cards.length-1].reveal();
+    }
+  }
+
+  this.hide = function()
+  {
+    if (this.cards.length > 0)
+    {
+      this.cards[this.cards.length-1].hide();
+    }
+  }
+
+  // draw this spot and its cards
+  this.cb_draw = function(ctx)
+  {
     if (this.selected)
     {
-      console.log("Draw yellow"+ this.x + "," + this.y + "," + this.w + "," + this.h);
-      ctx.strokeStyle = 'yellow';
-      ctx.lineWidth=2;
-      ctx.strokeRect(this.x+1, this.y+1, this.w-2, this.h-2);
+      ctx.strokeStyle = "yellow";
     }
+    else {
+      // draw the spot
+      ctx.strokeStyle = '#777777';
+    }
+    ctx.lineWidth=1;
+    ctx.strokeRect(this.x, this.y, this.w, this.h);
 
-    return true;
+    // only last card of the array (the z-order top)
+    // is drawn
+    if (this.cards.length > 0)
+      this.cards[this.cards.length-1].draw(ctx, this.x+1, this.y+1);
   }
 
-  this.cb_mousedown = function(x,y)
+  // shuffle the cards in this sport
+  this.shuffle = function()
   {
-    return true;
-  }
-
-  this.cb_mouseup = function(x,y)
-  {
-    // deselect previous card
-    if (this.parent.selected_card)
+    for (var i=this.cards.length-1; i > 1; i--)
     {
-      this.parent.selected_card.selected = false;
-      this.parent.selected_card.setDirty();
-      console.log("Deselect "+this.parent.selected_card.str());
+      var picked = Math.round(Math.random() * i);
+      this.cards[i].swap(this.cards[picked]);
     }
-
-    // select this one
-    this.selected = true;
-    console.log("Selected "+this.str());
-    this.parent.selected_card = this;
-    this.setDirty();
-
-    this.setPos(this.parent.pit.x,this.parent.pit.y);
-
-    console.log("Card "+ this.value + this.seed +" mouseup: " + x + "," + y);
-    return true;
   }
 }
 
@@ -157,17 +209,15 @@ function Deck() {
   // c = card class
   // w = card width (px)
   // h = card height (px)
-  this.make = function(c, w, h)
+  this.make = function(c, w, h, spot)
   {
-    this.card_width = w;
-    this.card_height = h;
     for (var i = 0; i < card_values.length; i++)
     {
       for (var j = 0; j < card_seeds.length; j++)
       {
         var card = new c(i,j,w,h);
         console.log(card.str());
-        this.add(card);
+        spot.add(card);
       }
     }
   }
@@ -190,15 +240,7 @@ function Deck() {
     console.log("Current deck: " + this.str());
   }
 
-  // shuffle current deck
-  this.shuffle = function()
-  {
-    for (var i=card_values.length*card_seeds.length-1; i > 1; i--)
-    {
-      var picked = Math.round(Math.random() * i);
-      this.items[i].swap(this.items[picked]);
-    }
-  }
+
 
   // get the whole deck a string
   this.str = function()
@@ -224,12 +266,14 @@ function Deck() {
   }
 
   // deploy cards for starting set up
-  this.build = function(rows, cols, dx, dy)
+  this.build = function(rows, cols, dx, dy, card_width, card_height)
   {
     this.card_dx=dx;
     this.card_dy=dy;
     this.card_per_rows = rows;
     this.card_per_cols = cols;
+    this.card_width = card_width;
+    this.card_height = card_height;
 
     for (var j = 0; j < rows; j++)
     {
@@ -240,28 +284,38 @@ function Deck() {
     }
 
     // special spot for cards to be played
-    this.pile = new TRect();
+    this.pile = new Spot();
     this.pile.setWidth(this.card_width+1);
     this.pile.setHeight(this.card_height+1);
     this.pile.setPos(this.x+this.width()-this.card_width-1-this.card_dx, this.y+this.card_dy);
+    this.pile.setCapacity(40);
+    this.make(Card,card_width,card_height,this.pile);
+    this.pile.shuffle();
+    this.pile.setMouseDownListener(function(x,y) {
+        console.log("PILE: mouse down listener");
+        var c = this.pile.extract();
+        c.reveal();
+        this.pit.add(c);
+        this.pit.setDirty();
+        this.pile.setDirty();
+    }.bind(this));
 
     // special sport for discarded cards
-    this.pit = new TRect();
+    this.pit = new Spot();
     this.pit.setWidth(this.card_width+1);
     this.pit.setHeight(this.card_height+1);
     this.pit.setPos(this.x+this.width()-this.card_width-1-this.card_dx, this.y+2*this.card_dy+this.card_height);
+    this.pit.setCapacity(40);
+    this.pit.setMouseDownListener(function(x,y) {
+        console.log("PIT: mouse down listener");
+    })
 
-    for (var j = 0; j < rows; j++)
+    for (var i = 0; i < this.card_spots.length; i++)
     {
-      for (var i = 0; i < cols; i++)
-      {
-        var index = j*cols+i;
-
-        //if we reached the total number of cards, we can exit.
-        if (index < this.items.length)
-          this.items[index].setPos(this.pile.x+1, this.pile.y+1);
-      }
+      this.add(this.card_spots[i]);
     }
+    this.add(this.pile);
+    this.add(this.pit);
   }
 
   // calculate card spot (i = rows, j=cols)
@@ -270,39 +324,21 @@ function Deck() {
     var xpos = this.x +this.card_dx + (this.card_width + this.card_dx)*i;
     var ypos = this.y +this.card_dy + (this.card_height + this.card_dy)*j;
 
-    var r = new TRect();
+    var r = new Spot();
     r.setPos(xpos,ypos);
     r.setWidth(this.card_width+1);
     r.setHeight(this.card_height+1);
+    r.setCapacity(1);
     return r;
-  }
-
-  // draw a card spot
-  this.draw_spot = function(ctx,r)
-  {
-    ctx.strokeStyle = '#777777';
-    ctx.lineWidth=1;
-    ctx.strokeRect(r.x, r.y, r.w, r.h);
   }
 
   // draw the deck (call draw on each card)
   this.cb_draw = function(ctx)
   {
-
-
     console.log("deck::draw");
     // draw table background (green)
     ctx.fillStyle = "#076324";
     ctx.fillRect(this.x, this.y, this.width(),this.height());
-
-    // draw played cards spots
-    for (var k = 0; k < this.card_spots.length; k++)
-    {
-      this.draw_spot(ctx,this.card_spots[k]);
-    }
-
-    this.draw_spot(ctx, this.pile);
-    this.draw_spot(ctx, this.pit);
 
     return true;
   }

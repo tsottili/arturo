@@ -15,17 +15,17 @@ function Table()
     D.setHeight(this.height()-10*2);
 
     // construct the cards (values, seeds, width and height)
-    D.make(Card,60,100);
+  //  D.make(Card,60,100);
 
     // shuffle the deck
-    D.shuffle();
+  //  D.shuffle();
 
     // just a console print of the shuffled deck
     D.log();
 
     // (temp) calculate card position assuming a rows X columns setup
     // calculate card spots and deck spot
-    D.build(10,5,5,5);
+    D.build(10,5,5,5,60,100);
 
     // add item to the scene
     this.add(D);

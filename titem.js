@@ -157,12 +157,27 @@ function TItem()
     }
 
     if ( (run) &&
-         (this.cb_mousedown != null) &&
+         (this.cb_mouseup != null) &&
          (this.inside(x,y) ) )
       return this.cb_mouseup(x,y);
 
     // don't stop event propagation
     return true;
+  }
+
+  this.setMouseDownListener = function(f)
+  {
+    this.cb_mousedown = f;
+  }
+
+  this.setMouseUpListener = function(f)
+  {
+    this.cb_mouseup = f;
+  }
+
+  this.setDrawListener = function(f)
+  {
+    this.cb_draw = f;
   }
 
 }
