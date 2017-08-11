@@ -129,7 +129,6 @@ function Card(v,s,w,h) {
   }
 }
 
-
 // Represent a deck of cards (as a collection of items)
 function Deck() {
 
