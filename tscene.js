@@ -10,6 +10,10 @@ function TScene()
   this.Yratio= 0;
   this.interval = 0;
 
+  this.cb_resize = null;
+  this.cb_scroll = null;
+
+
   this.clientToCanvas = function()
   {
     // get canvas rect (in client units)
@@ -33,16 +37,27 @@ function TScene()
     this.clientToCanvas();
   }
 
-  this.resize = function()
+  this.resize = function(ev)
   {
     console.log("Resize");
     this.clientToCanvas();
+
+    if (this.cb_resize != null)
+    {
+      this.cb_resize(ev);
+    }
+
   }.bind(this);
 
-  this.scroll = function()
+  this.scroll = function(ev)
   {
     console.log("Scroll");
     this.clientToCanvas();
+
+    if (this.cb_scroll != null)
+    {
+      this.cb_scroll(ev);
+    }
   }.bind(this);
 
   this.width = function()

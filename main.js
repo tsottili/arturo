@@ -14,12 +14,6 @@ function Table()
     D.setWidth(this.width()-10*2);
     D.setHeight(this.height()-10*2);
 
-    // construct the cards (values, seeds, width and height)
-  //  D.make(Card,60,100);
-
-    // shuffle the deck
-  //  D.shuffle();
-
     // just a console print of the shuffled deck
     D.log();
 
@@ -29,6 +23,18 @@ function Table()
 
     // add item to the scene
     this.add(D);
+  }
+
+  this.cb_scroll = function(ev)
+  {
+    console.log("Scroll calback (Scene)");
+    console.log(ev);
+  }
+
+  this.cb_resize = function(ev)
+  {
+    console.log("Resize calback (Scene)");
+    console.log(ev);
   }
 
 }
