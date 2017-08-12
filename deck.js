@@ -120,6 +120,9 @@ function Spot()
   // selected flag (last clicked on)
   this.selected = false;
 
+  // neighbour (spot with which this one can interact)
+  this.neighbour = [];
+
   // set maximum spot capacity.
   this.setCapacity = function(i)
   {
@@ -140,7 +143,7 @@ function Spot()
 
   // remove (and return) top card from the spot.
   // null if no card in the spot
-  this.extract = function(c)
+  this.extract = function()
   {
     if (this.cards.length > 0)
       this.setDirty();
@@ -311,6 +314,21 @@ function Deck() {
     }
   }
 
+  this.update_neighbours = function(i,j,s)
+  {
+    for (var ii = i-1; ii <= i+1; ii++)
+      for (var jj = j-1; jj <= j; jj++)
+      {
+        if ( (ii >= 0) && (ii< this.card_per_cols) &&
+             (jj >= 0) && ( ii<i || jj<j ) )
+        {
+          console.log("neighbour:"+ i+","+j +"and " + ii + "," + jj);
+          s.neighbour.push(this.card_spots[ii+jj*this.card_per_cols]);
+          this.card_spots[ii+jj*this.card_per_cols].neighbour.push(s);
+        }
+      }
+  }
+
   // deploy cards for starting set up
   this.build = function(rows, cols, dx, dy, card_width, card_height)
   {
@@ -325,7 +343,10 @@ function Deck() {
     {
       for (var i = 0; i < cols; i++)
       {
-        this.card_spots.push(this.calc_spot(i,j));
+        var s = this.create_spot(i,j);
+        this.update_neighbours(i,j,s);
+        this.card_spots.push(s);
+
       }
     }
 
@@ -333,26 +354,19 @@ function Deck() {
     this.pile = new Spot();
     this.pile.setWidth(this.card_width+1);
     this.pile.setHeight(this.card_height+1);
-    this.pile.setPos(this.x+this.width()-this.card_width-1-this.card_dx, this.y+this.card_dy);
+    this.pile.setPos(this.x+this.width()-this.card_width-1-this.card_dx, this.y+3*this.card_dy+3*this.card_height);
     this.pile.setCapacity(40);
 
     // make the cards and move them to the pile
     this.make(Card,this.pile);
 
     this.pile.shuffle();
-    this.pile.setMouseDownListener(function(x,y) {
-        console.log("PILE: mouse down listener");
-        if (this.pile.count() == 1)
-        {
-          var a = 10;
-        }
-        var c = this.pile.extract();
+    this.pile.setMouseUpListener(function(x,y) {
+        console.log("PILE: mouse up listener");
+          var c = this.pile.extract();
         if (c != null)
         {
           c.reveal();
-          //this.pit.add(c);
-          //this.pit.setDirty();
-          //this.pile.setDirty();
           this.moveToFirstFreeSpot(c);
         }
     }.bind(this));
@@ -362,10 +376,10 @@ function Deck() {
     this.pit = new Spot();
     this.pit.setWidth(this.card_width+1);
     this.pit.setHeight(this.card_height+1);
-    this.pit.setPos(this.x+this.width()-this.card_width-1-this.card_dx, this.y+2*this.card_dy+this.card_height);
+    this.pit.setPos(this.x+this.width()-this.card_width-1-this.card_dx, this.y+4*this.card_dy+4*this.card_height);
     this.pit.setCapacity(40);
-    this.pit.setMouseDownListener(function(x,y) {
-        console.log("PIT: mouse down listener");
+    this.pit.setMouseUpListener(function(x,y) {
+        console.log("PIT: mouse up listener");
     })
 
     for (var i = 0; i < this.card_spots.length; i++)
@@ -377,7 +391,7 @@ function Deck() {
   }
 
   // calculate card spot (i = rows, j=cols)
-  this.calc_spot = function(i,j)
+  this.create_spot = function(i,j)
   {
     var xpos = this.x +this.card_dx + (this.card_width + this.card_dx)*i;
     var ypos = this.y +this.card_dy + (this.card_height + this.card_dy)*j;
@@ -387,6 +401,10 @@ function Deck() {
     r.setWidth(this.card_width+1);
     r.setHeight(this.card_height+1);
     r.setCapacity(1);
+    r.setMouseUpListener(function(x,y){
+      this.doAction(r);
+    }.bind(this));
+
     return r;
   }
 
@@ -412,5 +430,36 @@ function Deck() {
   {
     console.log("Deck mouseup: " + x + "," + y);
   }
+
+
+  this.remove_if_same_is_near = function(c)
+  {
+      console.log("Remove if same is near");
+
+      // decode card position
+      for (var i =0; i < c.neighbour.length; i++)
+      {
+        if (c.neighbour[i].count() > 0)
+        {
+          if (c.cards[0].sameValue(c.neighbour[i].cards[0]))
+          {
+            console.log("Remove " + c.cards[0].str());
+          }
+        }
+      }
+  }
+
+  this.cb_action = this.remove_if_same_is_near;
+
+  // execute the currently selected action on the card
+  // passed set argument
+  this.doAction = function(c)
+  {
+      if (this.cb_action != null)
+      {
+        this.cb_action(c);
+      }
+  }
+
 
 }
