@@ -431,6 +431,24 @@ function Deck() {
     console.log("Deck mouseup: " + x + "," + y);
   }
 
+  this.move_and_slide = function(c)
+  {
+      // remove the element from the spots
+      var index = this.card_spots.indexOf(c);
+      this.card_spots[index].extract();
+
+      // all subsequent cards have to be redrawn
+      for (var i = index; i < this.card_spots.length-1;i++)
+      {
+        this.card_spots[i].add(this.card_spots[i+1].extract());
+        this.card_spots[i].setDirty();
+        this.card_spots[i+1].setDirty();
+      }
+
+      // move the removed card to the pit
+      this.pit.add(c);
+      this.pit.setDirty();
+  }
 
   this.remove_if_same_is_near = function(c)
   {
@@ -439,16 +457,36 @@ function Deck() {
       // decode card position
       for (var i =0; i < c.neighbour.length; i++)
       {
+        // if neighbour has a card
         if (c.neighbour[i].count() > 0)
         {
           if (c.cards[0].sameValue(c.neighbour[i].cards[0]))
           {
-            console.log("Remove " + c.cards[0].str());
+            // found lesser c in c.neighbour[i]
+            for (var j=0; j< c.neighbour[i].neighbour.length; j++)
+            {
+              if (c.neighbour[i].neighbour[j] == c)
+              {
+                if (j < i)
+                {
+                  console.log("Remove " + c.cards[0].str());
+                  this.move_and_slide(c);
+                }
+                else {
+                  console.log("Remove " + c.neighbour[i].cards[0].str());
+                  this.move_and_slide(c.neighbour[i]);
+                }
+                break;
+              }
+            }
+
+
           }
         }
       }
   }
 
+  // callback action when a spot is clicked.
   this.cb_action = this.remove_if_same_is_near;
 
   // execute the currently selected action on the card
