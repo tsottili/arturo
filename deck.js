@@ -55,11 +55,13 @@ function Card(v,s,w,h) {
     return "" + this.value + this.seed;
   }
 
+  // show this card face
   this.reveal = function()
   {
     this.showfront = true;
   }
 
+  // show this card back
   this.hide = function()
   {
     this.showfront = false;
@@ -104,10 +106,12 @@ function Card(v,s,w,h) {
   }
 }
 
+// Each spot is a collection of cards
 function Spot()
 {
   TItem.call(this);
 
+  // card in the spot
   this.cards = [];
 
   // max number of cards this spot can held
@@ -116,24 +120,31 @@ function Spot()
   // selected flag (last clicked on)
   this.selected = false;
 
+  // set maximum spot capacity.
   this.setCapacity = function(i)
   {
     this.capacity = i;
   }
 
+  // add a card to the spot
   this.add = function(c)
   {
     if (this.cards.length < this.capacity)
     {
       this.cards.push(c);
+      return true;
     }
+    return false;
   }
 
+  // remove (and return) top card from the spot.
+  // null if no card in the spot
   this.extract = function(c)
   {
     return this.cards.pop();
   }
 
+  // reveal the card (show the face)
   this.reveal = function()
   {
     if (this.cards.length > 0)
@@ -142,12 +153,19 @@ function Spot()
     }
   }
 
+  // cover the card (show the back)
   this.hide = function()
   {
     if (this.cards.length > 0)
     {
       this.cards[this.cards.length-1].hide();
     }
+  }
+
+  // number of cards in this spot
+  this.count = function()
+  {
+    return this.cards.length;
   }
 
   // draw this spot and its cards
@@ -168,6 +186,13 @@ function Spot()
     // is drawn
     if (this.cards.length > 0)
       this.cards[this.cards.length-1].draw(ctx, this.x+1, this.y+1);
+    else {
+      // If there is no card in the spot, then we can
+      // see the table
+      ctx.fillStyle = "#076324";
+      ctx.fillRect(this.x+1, this.y+1, this.width()-1,this.height()-1);
+    }
+
   }
 
   // shuffle the cards in this sport
@@ -206,16 +231,17 @@ function Deck() {
   // pit where the card are discarded
   this.pit = 0;
 
+  // construct the cards and place them
+  // in the spot
   // c = card class
-  // w = card width (px)
-  // h = card height (px)
-  this.make = function(c, w, h, spot)
+  // spot = cards position
+  this.make = function(c,spot)
   {
     for (var i = 0; i < card_values.length; i++)
     {
       for (var j = 0; j < card_seeds.length; j++)
       {
-        var card = new c(i,j,w,h);
+        var card = new c(i,j,this.card_width, this.card_height);
         console.log(card.str());
         spot.add(card);
       }
@@ -239,8 +265,6 @@ function Deck() {
   {
     console.log("Current deck: " + this.str());
   }
-
-
 
   // get the whole deck a string
   this.str = function()
@@ -289,15 +313,25 @@ function Deck() {
     this.pile.setHeight(this.card_height+1);
     this.pile.setPos(this.x+this.width()-this.card_width-1-this.card_dx, this.y+this.card_dy);
     this.pile.setCapacity(40);
-    this.make(Card,card_width,card_height,this.pile);
+
+    // make the cards and move them to the pile
+    this.make(Card,this.pile);
+
     this.pile.shuffle();
     this.pile.setMouseDownListener(function(x,y) {
         console.log("PILE: mouse down listener");
+        if (this.pile.count() == 1)
+        {
+          var a = 10;
+        }
         var c = this.pile.extract();
-        c.reveal();
-        this.pit.add(c);
-        this.pit.setDirty();
-        this.pile.setDirty();
+        if (c != null)
+        {
+          c.reveal();
+          this.pit.add(c);
+          this.pit.setDirty();
+          this.pile.setDirty();
+        }
     }.bind(this));
 
     // special sport for discarded cards
