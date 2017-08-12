@@ -132,6 +132,7 @@ function Spot()
     if (this.cards.length < this.capacity)
     {
       this.cards.push(c);
+      this.setDirty();
       return true;
     }
     return false;
@@ -141,6 +142,8 @@ function Spot()
   // null if no card in the spot
   this.extract = function(c)
   {
+    if (this.cards.length > 0)
+      this.setDirty();
     return this.cards.pop();
   }
 
@@ -150,6 +153,7 @@ function Spot()
     if (this.cards.length > 0)
     {
       this.cards[this.cards.length-1].reveal();
+      this.setDirty();
     }
   }
 
@@ -159,6 +163,7 @@ function Spot()
     if (this.cards.length > 0)
     {
       this.cards[this.cards.length-1].hide();
+      this.setDirty();
     }
   }
 
@@ -166,6 +171,11 @@ function Spot()
   this.count = function()
   {
     return this.cards.length;
+  }
+
+  this.free = function()
+  {
+    return (this.cards.length == 0);
   }
 
   // draw this spot and its cards
@@ -289,6 +299,18 @@ function Deck() {
     return card_seeds.length;
   }
 
+  this.moveToFirstFreeSpot = function(c)
+  {
+    for (var i =0; i < this.card_spots.length;i++)
+    {
+      if (this.card_spots[i].free())
+      {
+        this.card_spots[i].add(c);
+        return;
+      }
+    }
+  }
+
   // deploy cards for starting set up
   this.build = function(rows, cols, dx, dy, card_width, card_height)
   {
@@ -328,11 +350,13 @@ function Deck() {
         if (c != null)
         {
           c.reveal();
-          this.pit.add(c);
-          this.pit.setDirty();
-          this.pile.setDirty();
+          //this.pit.add(c);
+          //this.pit.setDirty();
+          //this.pile.setDirty();
+          this.moveToFirstFreeSpot(c);
         }
     }.bind(this));
+
 
     // special sport for discarded cards
     this.pit = new Spot();

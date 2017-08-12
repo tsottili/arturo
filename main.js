@@ -19,7 +19,7 @@ function Table()
 
     // (temp) calculate card position assuming a rows X columns setup
     // calculate card spots and deck spot
-    D.build(10,5,5,5,60,100);
+    D.build(8,5,5,5,60,100);
 
     // add item to the scene
     this.add(D);
