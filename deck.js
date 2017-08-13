@@ -132,7 +132,7 @@ function Spot()
   // add a card to the spot
   this.add = function(c)
   {
-    if (this.cards.length < this.capacity)
+    if ((c != null) && (this.cards.length < this.capacity))
     {
       this.cards.push(c);
       this.setDirty();
@@ -147,7 +147,13 @@ function Spot()
   {
     if (this.cards.length > 0)
       this.setDirty();
-    return this.cards.pop();
+    var c1 = this.cards.pop();
+
+    if (c1 != null)
+    {
+      console.log("Extract " + c1.str() + " new length " + this.cards.length);
+    }
+    return c1;
   }
 
   // reveal the card (show the face)
@@ -195,10 +201,17 @@ function Spot()
     ctx.lineWidth=1;
     ctx.strokeRect(this.x, this.y, this.w, this.h);
 
+    if (this.capacity == 40)
+    {
+      var a = 10;
+    }
+
     // only last card of the array (the z-order top)
     // is drawn
     if (this.cards.length > 0)
+    {
       this.cards[this.cards.length-1].draw(ctx, this.x+1, this.y+1);
+    }
     else {
       // If there is no card in the spot, then we can
       // see the table
@@ -302,6 +315,8 @@ function Deck() {
     return card_seeds.length;
   }
 
+  // select the first available free spot for the
+  // card
   this.moveToFirstFreeSpot = function(c)
   {
     for (var i =0; i < this.card_spots.length;i++)
@@ -314,6 +329,10 @@ function Deck() {
     }
   }
 
+  // update this spot neighbours list with existing spot
+  // update existing neighbours spot lists with this spot
+  // in the end (after all spot has been created), each spot
+  // knows its row and cols neighbours (up to 8)
   this.update_neighbours = function(i,j,s)
   {
     for (var ii = i-1; ii <= i+1; ii++)
@@ -322,7 +341,7 @@ function Deck() {
         if ( (ii >= 0) && (ii< this.card_per_cols) &&
              (jj >= 0) && ( ii<i || jj<j ) )
         {
-          console.log("neighbour:"+ i+","+j +"and " + ii + "," + jj);
+          //console.log("neighbour:"+ i+","+j +"and " + ii + "," + jj);
           s.neighbour.push(this.card_spots[ii+jj*this.card_per_cols]);
           this.card_spots[ii+jj*this.card_per_cols].neighbour.push(s);
         }
@@ -343,13 +362,16 @@ function Deck() {
     {
       for (var i = 0; i < cols; i++)
       {
+        // create the spot at row i, column j
         var s = this.create_spot(i,j);
-        this.update_neighbours(i,j,s);
-        this.card_spots.push(s);
 
+        // build this spot neighbours list, and update neighbours list with this node
+        this.update_neighbours(i,j,s);
+
+        // save the spot in the spot array
+        this.card_spots.push(s);
       }
     }
-
     // special spot for cards to be played
     this.pile = new Spot();
     this.pile.setWidth(this.card_width+1);
@@ -361,13 +383,15 @@ function Deck() {
     this.make(Card,this.pile);
 
     this.pile.shuffle();
-    this.pile.setMouseUpListener(function(x,y) {
-        console.log("PILE: mouse up listener");
-          var c = this.pile.extract();
-        if (c != null)
+    this.pile.setMouseUpListener(function(x,y,btn) {
+        if (btn == 0)
         {
-          c.reveal();
-          this.moveToFirstFreeSpot(c);
+          var c = this.pile.extract();
+          if (c != null)
+          {
+            c.reveal();
+            this.moveToFirstFreeSpot(c);
+          }
         }
     }.bind(this));
 
@@ -378,9 +402,6 @@ function Deck() {
     this.pit.setHeight(this.card_height+1);
     this.pit.setPos(this.x+this.width()-this.card_width-1-this.card_dx, this.y+4*this.card_dy+4*this.card_height);
     this.pit.setCapacity(40);
-    this.pit.setMouseUpListener(function(x,y) {
-        console.log("PIT: mouse up listener");
-    })
 
     for (var i = 0; i < this.card_spots.length; i++)
     {
@@ -396,16 +417,18 @@ function Deck() {
     var xpos = this.x +this.card_dx + (this.card_width + this.card_dx)*i;
     var ypos = this.y +this.card_dy + (this.card_height + this.card_dy)*j;
 
-    var r = new Spot();
-    r.setPos(xpos,ypos);
-    r.setWidth(this.card_width+1);
-    r.setHeight(this.card_height+1);
-    r.setCapacity(1);
-    r.setMouseUpListener(function(x,y){
-      this.doAction(r);
+    var s = new Spot();
+    s.setPos(xpos,ypos);
+    s.setWidth(this.card_width+1);
+    s.setHeight(this.card_height+1);
+    s.setCapacity(1);
+    s.setMouseUpListener(function(x,y,btn){
+      // only left button
+      if (btn == 0)
+        this.doAction(s);
     }.bind(this));
 
-    return r;
+    return s;
   }
 
   // draw the deck (call draw on each card)
@@ -420,34 +443,35 @@ function Deck() {
   }
 
   // just a sample
-  this.cb_mousedown = function(x,y)
+  this.cb_mousedown = function(x,y,btn)
   {
     console.log("Deck mousedown: " + x + "," + y);
   }
 
   // just a sample
-  this.cb_mouseup = function(x,y)
+  this.cb_mouseup = function(x,y,btn)
   {
     console.log("Deck mouseup: " + x + "," + y);
   }
 
-  this.move_and_slide = function(c)
+  this.move_and_slide = function(spot)
   {
       // remove the element from the spots
-      var index = this.card_spots.indexOf(c);
-      this.card_spots[index].extract();
+      var index = this.card_spots.indexOf(spot);
+      var removed = this.card_spots[index].extract();
 
       // all subsequent cards have to be redrawn
       for (var i = index; i < this.card_spots.length-1;i++)
       {
-        this.card_spots[i].add(this.card_spots[i+1].extract());
-        this.card_spots[i].setDirty();
-        this.card_spots[i+1].setDirty();
+        var card = this.card_spots[i+1].extract();
+        if (card != null)
+        {
+          this.card_spots[i].add(card);
+        }
       }
 
       // move the removed card to the pit
-      this.pit.add(c);
-      this.pit.setDirty();
+      this.pit.add(removed);
   }
 
   this.remove_if_same_is_near = function(c)

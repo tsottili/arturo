@@ -39,7 +39,6 @@ function TScene()
 
   this.resize = function(ev)
   {
-    console.log("Resize");
     this.clientToCanvas();
 
     if (this.cb_resize != null)
@@ -51,7 +50,6 @@ function TScene()
 
   this.scroll = function(ev)
   {
-    console.log("Scroll");
     this.clientToCanvas();
 
     if (this.cb_scroll != null)
@@ -109,7 +107,7 @@ function TScene()
     var y = (event.clientY - this.rect.top)*this.Yratio;
     for (var i = 0; i < this.items.length; i++)
     {
-      run = this.items[i].mousedown(x,y);
+      run = this.items[i].mousedown(x,y,event.button);
       if (!run)
       {
         break;
@@ -129,7 +127,7 @@ function TScene()
 
     for (var i = 0; i < this.items.length; i++)
     {
-      run = this.items[i].mouseup(x,y);
+      run = this.items[i].mouseup(x,y,event.button);
       if (!run)
       {
         break;

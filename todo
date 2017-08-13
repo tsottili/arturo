@@ -1,0 +1,9 @@
+todo list:
+
+1. separate a matrix-spot (with neighbours management) and the deck.
+2. separate the deck and the tableau (maybe)
+3. specialized item (label and buttons)
+4. clear division between: game <--> solitaire framework <--> scene framework
+5. game flow and structure (ux)
+6. allow exchange card position.
+7. build a (sort of) cute page!

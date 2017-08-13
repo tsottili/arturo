@@ -123,12 +123,12 @@ function TItem()
     this.dirty = false;
   }
 
-  this.mousedown = function(x,y)
+  this.mousedown = function(x,y,btn)
   {
     var run = true;
     for (var i = 0; i < this.items.length; i++)
     {
-      run = this.items[i].mousedown(x,y);
+      run = this.items[i].mousedown(x,y,btn);
       if (!run)
       {
         break;
@@ -138,18 +138,18 @@ function TItem()
     if ( (run) &&
          (this.cb_mousedown != null) &&
          (this.inside(x,y) ) )
-      return this.cb_mousedown(x,y);
+      return this.cb_mousedown(x,y,btn);
 
     // don't stop event propagation
     return true;
   }
 
-  this.mouseup = function(x,y)
+  this.mouseup = function(x,y,btn)
   {
     var run = true;
     for (var i = 0; i < this.items.length; i++)
     {
-      run = this.items[i].mouseup(x,y);
+      run = this.items[i].mouseup(x,y,btn);
       if (!run)
       {
         break;
@@ -159,7 +159,7 @@ function TItem()
     if ( (run) &&
          (this.cb_mouseup != null) &&
          (this.inside(x,y) ) )
-      return this.cb_mouseup(x,y);
+      return this.cb_mouseup(x,y,btn);
 
     // don't stop event propagation
     return true;
